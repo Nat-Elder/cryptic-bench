@@ -1,8 +1,8 @@
 # CrypticBench
 
 How well do frontier models solve cryptic crossword clues without chain of thought, and how
-much does reasoning add? Eight models were tested on 100 original cryptic clues, scoring not
-just their answers but whether their working actually produces them.
+much does reasoning add? Eight models tested on 100 clues I wrote + whether the models could 
+produce correct clue derivations.
 
 ![No-CoT accuracy by model](figures/no_cot_accuracy.png)
 
