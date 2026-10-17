@@ -1,0 +1,70 @@
+{
+ "run_id": "nocot_nat_opus5-nocot_20260910T151343Z",
+ "system": "opus5-nocot",
+ "task": "nocot",
+ "dataset": "nat",
+ "repeat_index": 1,
+ "n_repeats": 1,
+ "model": "openrouter/anthropic/claude-opus-5",
+ "model_configured": "openrouter/anthropic/claude-opus-5",
+ "model_batch": "openrouter/anthropic/claude-opus-5:batch",
+ "route": "openrouter",
+ "arm": "nocot",
+ "generate": {
+  "max_tokens": 8
+ },
+ "model_args": {
+  "reasoning_enabled": false
+ },
+ "batched": false,
+ "structured_output": false,
+ "temperature": "not set",
+ "prompt_version": "v1",
+ "prompt_sha256": "e1472a442a4d37f3b45f54cd48889a74ac636dabf59aaef69ca523431e2ff8d3",
+ "config_fingerprint": "77bf3da3467e45f1",
+ "dataset_sha256": "ea7c85b5880bc18db9eaec5189de8d109cfc9884eb5ec15f2d7c8a5fd34ce93d",
+ "models_yaml_sha256": "c3cd94206931856bc7c829b9014fcbd21440a8e2c2f70df3000886c58e64edbe",
+ "inspect_ai_version": "0.3.258",
+ "started_utc": "2026-09-10T15:13:43.724972+00:00",
+ "duration_s": 3.9,
+ "n": 5,
+ "status": "success",
+ "training_cutoff": null,
+ "training_cutoff_source": "NOT CHECKED \u2014 not on the OpenRouter listing; take it from the vendor's own page",
+ "usage": {
+  "n": 5,
+  "mean_input_tokens": 241.4,
+  "mean_output_tokens": 8.0,
+  "max_output_tokens_seen": 8,
+  "n_reasoning_reported": 5,
+  "mean_reasoning_tokens": 0.0,
+  "max_reasoning_tokens_seen": 0,
+  "reasoning_rate": 0.0
+ },
+ "reasoning_gate": {
+  "task": "nocot",
+  "route": "openrouter",
+  "requires_reported_reasoning": true,
+  "passed": true,
+  "n_truncated": 5,
+  "n": 5,
+  "mean_input_tokens": 241.4,
+  "mean_output_tokens": 8.0,
+  "max_output_tokens_seen": 8,
+  "n_reasoning_reported": 5,
+  "mean_reasoning_tokens": 0.0,
+  "max_reasoning_tokens_seen": 0,
+  "reasoning_rate": 0.0,
+  "note": "nocot reasoning gate PASSED: mean reasoning tokens 0.0 over 5 samples (5 calls reported the field); 5 truncated"
+ },
+ "extra_text_rule": {
+  "n": 5,
+  "n_extra": 1,
+  "extra_text_rate": 0.2,
+  "over_threshold": true,
+  "note": "1/5 = 20.0% of nocot outputs carry text beyond the answer \u2014 over the 5% rule. Re-run this system with `generate: {structured: true}` in configs/models.yaml and say so in the write-up (PLAN \u00a72.1)."
+ },
+ "n_truncated": 5,
+ "n_errors": 0,
+ "log_dir": "results/logs/nocot_nat_opus5-nocot_20260910T151343Z"
+}

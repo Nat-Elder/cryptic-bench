@@ -1,0 +1,6 @@
+model,no_cot,reasoning_on,gain,gain_ci_low,gain_ci_high,note
+GPT-5.5,0.517,0.940,0.423,0.292,0.554,
+GPT-6 Astra,0.583,0.900,0.317,0.197,0.440,
+GPT-5.6 Sol,0.531,0.860,0.329,0.207,0.454,
+Claude Sonnet 5,0.253,0.580,0.327,0.188,0.472,high effort; 26% truncated so a lower bound
+Claude Haiku 4.5,0.195,0.280,0.085,-0.015,0.190,

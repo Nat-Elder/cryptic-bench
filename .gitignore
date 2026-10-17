@@ -1,0 +1,30 @@
+# secrets
+.env
+
+# environments and caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.DS_Store
+
+# Clue data is never committed: the setter's corpus, its device tags and exemplars,
+# raw exports, and the third-party calibration sets (rebuilt by script; see data/README.md).
+data/corpus.jsonl
+data/devices.jsonl
+data/exemplars.json
+data/raw/
+data/calibration/*.jsonl
+*.sqlite3
+*.sqlite3-journal
+
+# Results: run manifests and summary tables are tracked. Logs and answer files quote the clues.
+logs/
+results/*
+!results/runs/
+!results/summary/
+results/runs/*
+!results/runs/*.json
+results/*.tmp

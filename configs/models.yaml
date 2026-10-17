@@ -1,0 +1,474 @@
+# One entry per **system** = model × reasoning setting (PLAN §2.1, §3). A system is the unit of
+# every table in the analysis, so `haiku45-nocot` and `haiku45-think` are two rows, not one.
+#
+# **One route: OpenRouter** (Nat's ruling, 2026-09-10; PLAN §8). Every live
+# system below is an `openrouter/...` slug and the only key the repo needs is
+# OPENROUTER_API_KEY. Direct vendor keys are not needed and no entry here uses one.
+#
+# Keys per entry:
+#   cut                      present only on a system cut from the run. Its value is the
+#                            ruling that cut it, and run.py refuses the system quoting that
+#                            string unless `--include-cut` is passed (`--dry-run` prints it as
+#                            cut and moves on). The entries stay for the record (PLAN §3, §8);
+#                            deleting them would lose why the row is absent.
+#   route                    openrouter | mock. Which key the run needs.
+#   model                    the inspect model id, non-batch. `null` where the id is not known;
+#                            the runner refuses the system.
+#   model_batch              the OpenRouter ':batch' id. Used unless `--sync` is passed.
+#   batch                    true = runs go through `model_batch` unless `--sync` is passed.
+#   arm                      nocot | think | think_cot. run.py refuses `--task` != this, so a
+#                            `max_tokens: 16` config can never be handed the seven-field prompt.
+#   model_args               provider constructor args. On this route that is where reasoning
+#                            is turned OFF: `reasoning_enabled: false` (see below). Absent on
+#                            `astra-nocot` alone, where it is a 400 — see the Astra block.
+#   generate                 GenerateConfig fields, validated at load.
+#   family / role / rung     how the analysis groups systems. `family` is the model (sonnet5),
+#                            `role` is nocot | think | rung | cot: `think` marks the row this
+#                            model contributes to the CoT gain (PLAN §5.2), `rung` the Sonnet 5
+#                            ladder (§5.5). `sonnet5-high` is both the top rung and Sonnet 5's
+#                            `think` row, which is why the two keys are separate.
+#   training_cutoff          for the cutoff split (PLAN §2.6). Null on every system: cutoffs are
+#                            not on the OpenRouter listing. The analysis declines that arm.
+#
+# **A null model id or `training_cutoff` is deliberate.** Fill it from the vendor's own page;
+# do not fill it from memory.
+#
+# ---- The `nocot` arm is "asked not to reason, verified per call" ---------------------------
+# Prompt **v2** (`prompts/nocot.v2.txt`, the default for the arm) appends one line to v1 asking
+# for no reasoning tokens. It is the same prompt on every system in the arm — inert where
+# reasoning is off by parameter, load-bearing on `astra-nocot`, where no parameter can turn
+# reasoning off and the count is what the claim rests on (probe report §7.4). Two consequences
+# that live outside this file: a `nocot` call with `reasoning_tokens > 0` is excluded from that
+# system's accuracy and reported beside it (analysis/metrics.py), and every manifest's
+# `reasoning_gate` carries `n_reasoned` alongside the unchanged pass rule (mean exactly 0 and
+# the field reported on this route).
+#
+# **No `temperature` anywhere.** Claude 4.7+ (Opus 4.7, Sonnet 5, Opus 5) are always in
+# adaptive thinking and reject it, and GPT-5.5 ignores it with reasoning on. So k > 1 is
+# default sampling on every system and the frozen "k = 1 at temperature 0" ruling is void
+# (PLAN §8). run.py prints this once per invocation.
+#
+# Model ids: **openrouter.ai/api/v1/models, checked 2026-09-10**. The -pro, -luna and -terra
+# variants of these slugs are deliberately not used.
+#
+# ---- Reasoning on the OpenRouter route -----------------------------------------------------
+# Verified against the installed inspect_ai 0.3.258 source on 2026-09-10, not from memory:
+#
+#   - `model/_providers/openrouter.py` `completion_params()` **deletes** `reasoning_effort`
+#     from the OpenAI params and re-sends it as `extra_body.reasoning.effort`, passing the
+#     value through unchanged (only `max` is rewritten to `xhigh`). Its own comment records
+#     that OpenRouter accepts minimal/low/medium/high/xhigh — **`none` is not on that list**,
+#     so `reasoning_effort: none` would put an unaccepted value on the wire. No entry here
+#     uses it; `tests/test_models_yaml.py` pins that.
+#   - Reasoning is turned **off** with `model_args: {reasoning_enabled: false}`, which the
+#     provider collects in `__init__` and sends as `extra_body.reasoning.enabled = false`
+#     ("enabled=false will disable reasoning on hybrid models", openrouter.py).
+#   - `reasoning_tokens: N` becomes `extra_body.reasoning.max_tokens = N` — but only when
+#     `reasoning_effort` is unset (effort wins and `reasoning_tokens` is then warned away).
+#     That is how Haiku 4.5 gets its thinking budget on this route.
+#   - **Reasoning ON at the vendor's default** is the absence of all three: no
+#     `reasoning_effort`, no `reasoning_tokens`, no `reasoning_enabled`, so the provider builds
+#     no `reasoning` block at all and OpenRouter passes the model's own default. That is
+#     PLAN §2.1's definition of the `think` arm. Unverified without a live call: that the
+#     default is reasoning *on* for each of these slugs. The probe measures it (RUNBOOK §2).
+#   - `generate.batch` does **nothing** on this route: `openai_compatible.py` passes
+#     `batcher=None`, so inspect never opens a batch job for an OpenRouter model. The ':batch'
+#     model id is the only batch mechanism, which is why `batch` is a top-level key here and
+#     not a `generate` field.
+
+mock:
+  route: mock
+  model: mockllm/model
+  model_batch: null
+  batch: false
+  arm: nocot
+  family: mock
+  role: nocot
+  generate: {max_tokens: 16}
+  training_cutoff: null
+  training_cutoff_source: n/a
+
+mock-think:
+  route: mock
+  model: mockllm/model
+  model_batch: null
+  batch: false
+  arm: think
+  family: mock
+  role: think
+  generate: {max_tokens: 4000}
+  training_cutoff: null
+  training_cutoff_source: n/a
+
+mock-think-cot:
+  route: mock
+  model: mockllm/model
+  model_batch: null
+  batch: false
+  arm: think_cot
+  family: mock
+  role: cot
+  generate: {max_tokens: 4000}
+  training_cutoff: null
+  training_cutoff_source: n/a
+
+# ---- Haiku 4.5 ----------------------------------------------------------------------------
+haiku45-nocot:
+  # Cut 2026-09-10 evening, un-cut 2026-09-11 (Nat). Adding it back widens the no-CoT table to
+  # seven systems.
+  route: openrouter
+  model: openrouter/anthropic/claude-haiku-4.5
+  model_batch: openrouter/anthropic/claude-haiku-4.5:batch
+  batch: true
+  arm: nocot
+  family: haiku45
+  role: nocot
+  model_args: {reasoning_enabled: false}
+  generate: {max_tokens: 16}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+haiku45-think:
+  # Cut 2026-09-10 evening, un-cut 2026-09-11 (Nat). Adding it back widens the no-CoT table to
+  # seven systems.
+  route: openrouter
+  model: openrouter/anthropic/claude-haiku-4.5
+  model_batch: openrouter/anthropic/claude-haiku-4.5:batch
+  batch: true
+  arm: think
+  family: haiku45
+  role: think
+  # The only entry that takes an explicit budget: Haiku 4.5 predates adaptive thinking, so
+  # `reasoning_tokens` is what turns thinking on for it. On this route the openrouter provider
+  # sends it as `reasoning: {max_tokens: 3000}` (verified in openrouter.py, 2026-09-10), which
+  # is why haiku45-think IS expressible through OpenRouter.
+  generate: {reasoning_tokens: 3000, max_tokens: 8000}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+  # 150-token block + PLAN §6's middle case of 3k thinking. Anthropic bills thinking inside
+  # output_tokens, so the estimate is their sum. Replaced at the gate.
+
+# ---- Sonnet 5: the effort ladder (PLAN §2.1, cot-design-2026-09-09.md §3) ------------------
+# Six systems on one model. `sonnet5-high` is also this model's `think` row; `sonnet5-off` is
+# "thinking off, derivation still written" and is NOT a no-CoT row — only `sonnet5-nocot` is.
+# The rungs are OpenRouter's `reasoning.effort` low / medium / high, one to one.
+sonnet5-nocot:
+  route: openrouter
+  model: openrouter/anthropic/claude-sonnet-5
+  model_batch: openrouter/anthropic/claude-sonnet-5:batch
+  batch: true
+  arm: nocot
+  family: sonnet5
+  role: nocot
+  model_args: {reasoning_enabled: false}
+  generate: {max_tokens: 16}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+sonnet5-off:
+  route: openrouter
+  model: openrouter/anthropic/claude-sonnet-5
+  model_batch: openrouter/anthropic/claude-sonnet-5:batch
+  batch: true
+  arm: think
+  family: sonnet5
+  role: rung
+  rung: "off"
+  # Thinking disabled, the seven-field template still asked for. Same switch as the `nocot`
+  # arm — `reasoning: {enabled: false}` — and no effort is sent, so "off" is the bottom of the
+  # ladder rather than a point on it. Declare it in the post as "off = reasoning disabled".
+  model_args: {reasoning_enabled: false}
+  generate: {max_tokens: 2000}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+sonnet5-low:
+  route: openrouter
+  model: openrouter/anthropic/claude-sonnet-5
+  model_batch: openrouter/anthropic/claude-sonnet-5:batch
+  batch: true
+  arm: think
+  family: sonnet5
+  role: rung
+  rung: low
+  generate: {reasoning_effort: low, max_tokens: 4000}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+sonnet5-medium:
+  # **Cut 2026-09-10 night (Nat).** The ladder runs `off`, `low`, `high`: three points, enough
+  # for PLAN §5.5's difference-of-slopes. Its 20 gate clues (v1) are on file and superseded.
+  # The entry stays for the record; `--include-cut` runs it.
+  cut: "2026-09-10 Nat — rungs trimmed to off/low/high (PLAN §5.5)"
+  route: openrouter
+  model: openrouter/anthropic/claude-sonnet-5
+  model_batch: openrouter/anthropic/claude-sonnet-5:batch
+  batch: true
+  arm: think
+  family: sonnet5
+  role: rung
+  rung: medium
+  generate: {reasoning_effort: medium, max_tokens: 8000}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+sonnet5-high:
+  route: openrouter
+  model: openrouter/anthropic/claude-sonnet-5
+  model_batch: openrouter/anthropic/claude-sonnet-5:batch
+  batch: true
+  arm: think
+  family: sonnet5
+  role: think
+  rung: high
+  generate: {reasoning_effort: high, max_tokens: 16000}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+sonnet5-cot:
+  route: openrouter
+  model: openrouter/anthropic/claude-sonnet-5
+  model_batch: openrouter/anthropic/claude-sonnet-5:batch
+  batch: true
+  arm: think_cot
+  family: sonnet5
+  role: cot
+  rung: cot
+  # Reasoning disabled, prose reasoning asked for in the prompt: reasoning in the output rather
+  # than in the budget. Not a point on the effort axis — a side contrast against sonnet5-off.
+  model_args: {reasoning_enabled: false}
+  generate: {max_tokens: 2000}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+# ---- Opus 4.7 -----------------------------------------------------------------------------
+# Added 2026-09-10 from the OpenRouter listing. The cutoff is still blank.
+opus47-nocot:
+  route: openrouter
+  model: openrouter/anthropic/claude-opus-4.7
+  model_batch: openrouter/anthropic/claude-opus-4.7:batch
+  batch: true
+  arm: nocot
+  family: opus47
+  role: nocot
+  # 4.7 runs adaptive thinking by default, so the switch has to be thrown explicitly —
+  # omitting it would leave reasoning ON and there would be no nocot arm.
+  model_args: {reasoning_enabled: false}
+  generate: {max_tokens: 16}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+opus47-think:
+  route: openrouter
+  model: openrouter/anthropic/claude-opus-4.7
+  model_batch: openrouter/anthropic/claude-opus-4.7:batch
+  batch: true
+  arm: think
+  family: opus47
+  role: think
+  # **The one `think` row that has to ask.** PLAN §2.1 defines `think` as the vendor's own
+  # default effort, which on this route is the absence of every reasoning key — and that is
+  # what every other `think` entry does. It does not work here: five probe clues under exactly
+  # that config returned `reasoning_tokens` 0, no thinking block and 330 output tokens on all
+  # five, while Sonnet 5 and Opus 5 reasoned under the identical config (probe report §9.2).
+  # On OpenRouter, omitting the key leaves Claude 4.7's thinking OFF. So this entry sends
+  # `reasoning: {enabled: true}` and nothing else: thinking on, no effort and no budget, so the
+  # model still chooses its own dose. It is a **declared deviation** from "the absence of every
+  # key", not from "the vendor's default effort", and the five probe rows taken before it are a
+  # template-with-no-thinking measurement — do not use them.
+  model_args: {reasoning_enabled: true}
+  generate: {max_tokens: 16000}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+# ---- Opus 5 -------------------------------------------------------------------------------
+opus5-nocot:
+  route: openrouter
+  model: openrouter/anthropic/claude-opus-5
+  model_batch: openrouter/anthropic/claude-opus-5:batch
+  batch: true
+  arm: nocot
+  family: opus5
+  role: nocot
+  # Expect the 5 % rule to fire on this system: it leaks reasoning into visible text with
+  # thinking off (PLAN §3). The rule measures it; nothing here suppresses it.
+  model_args: {reasoning_enabled: false}
+  generate: {max_tokens: 16}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+opus5-think:
+  route: openrouter
+  model: openrouter/anthropic/claude-opus-5
+  model_batch: openrouter/anthropic/claude-opus-5:batch
+  batch: true
+  arm: think
+  family: opus5
+  role: think
+  generate: {max_tokens: 16000}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+# ---- GPT-5.5 ------------------------------------------------------------------------------
+gpt55-nocot:
+  route: openrouter
+  model: openrouter/openai/gpt-5.5
+  model_batch: openrouter/openai/gpt-5.5:batch
+  batch: true
+  arm: nocot
+  family: gpt55
+  role: nocot
+  model_args: {reasoning_enabled: false}
+  generate: {max_tokens: 16}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+gpt55-think:
+  route: openrouter
+  model: openrouter/openai/gpt-5.5
+  model_batch: openrouter/openai/gpt-5.5:batch
+  batch: true
+  arm: think
+  family: gpt55
+  role: think
+  # No reasoning key: the vendor default. An unpinned effort would be an uncontrolled
+  # parameter; here `think` is *defined* as whatever the vendor does by default (PLAN §2.1).
+  generate: {max_tokens: 16000}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+# ---- GPT-5.6 Sol --------------------------------------------------------------------------
+# Runnable as of 2026-09-10: the OpenRouter listing carries the slug.
+sol-nocot:
+  route: openrouter
+  model: openrouter/openai/gpt-5.6-sol
+  model_batch: openrouter/openai/gpt-5.6-sol:batch
+  batch: true
+  arm: nocot
+  family: sol
+  role: nocot
+  model_args: {reasoning_enabled: false}
+  generate: {max_tokens: 16}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+sol-think:
+  route: openrouter
+  model: openrouter/openai/gpt-5.6-sol
+  model_batch: openrouter/openai/gpt-5.6-sol:batch
+  batch: true
+  arm: think
+  family: sol
+  role: think
+  generate: {max_tokens: 16000}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+# ---- GPT-6 Astra --------------------------------------------------------------------------
+# The headline model (PLAN §1). Its reasoning **cannot be switched off by parameter** (probe,
+# 2026-09-10, probe-gate-report §7.1 and §7.3): on OpenRouter `reasoning: {enabled: false}` is a
+# 400 ("Reasoning is mandatory") and `minimal` still reasons; on OpenAI's own API
+# `reasoning.effort` accepts only low/medium/high/xhigh/max. **The row exists by prompt** (§7.4,
+# built 2026-09-10 evening): `reasoning_effort: low` — the lowest legal value — plus the line the
+# `nocot` prompt v2 appends for every system, which returned `reasoning_tokens = 0` on 7 of 7
+# calls across both routes with the answers correct.
+#
+# **So `astra-nocot` is the one `nocot` entry with no `reasoning_enabled: false` and the one
+# with a `reasoning_effort`**, and it is the reason `nocot` is "asked not to reason, verified
+# per call" rather than "reasoning off by parameter". Its zero is a measurement, not a setting:
+# every call carries its own count, a call with `reasoning_tokens > 0` leaves the accuracy
+# (analysis/metrics.py) and is reported beside it, and the run manifest's `reasoning_gate`
+# carries `n_reasoned`. `tests/test_models_yaml.py` states the exception in its docstrings.
+# Also learnt: inspect 0.3.258 handles a `gpt-6-*` name as a pre-5 GPT (chat completions,
+# `max_tokens`, effort stripped); the direct route needed `model_args: {responses_api: true}`,
+# and the Responses API refuses `max_output_tokens` under 16.
+astra-nocot:
+  route: openrouter
+  model: openrouter/openai/gpt-6-astra
+  model_batch: openrouter/openai/gpt-6-astra:batch
+  batch: true
+  arm: nocot
+  family: astra
+  role: nocot
+  # No `model_args`: `reasoning_enabled: false` is a 400 on this model (§7.1). `low` is the
+  # lowest effort OpenRouter and OpenAI both accept for a gpt-6 name; the prompt does the rest.
+  generate: {max_tokens: 16, reasoning_effort: low}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+astra-think:
+  # **Cut 2026-09-10 evening, un-cut the same night (Nat)**, on an estimate of 3,150 output
+  # tokens per clue that the gate measured at 630. The premise was wrong, so the row is back:
+  # without it PLAN §5.2's gain-ordering test has no row for the model whose gain the Astra post
+  # is a claim about. No `cut` field, so no `--include-cut` needed.
+  route: openrouter
+  model: openrouter/openai/gpt-6-astra
+  model_batch: openrouter/openai/gpt-6-astra:batch
+  batch: true
+  arm: think
+  family: astra
+  role: think
+  generate: {max_tokens: 16000}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+# ---- Claude Fable 5.1 -----------------------------------------------------------------------
+# **`think`-only, and that is the point.** PLAN §3 excludes Fable from the `nocot` arm because
+# its thinking cannot be disabled through the API — so it cannot have a no-CoT row at all, and
+# §3 says it "could have a `think` row, labelled as such, if wanted". Nat wanted it, 2026-09-11.
+#
+# Consequences, all deliberate: it has no `nocot` entry, so `cot_gain()` reports "needs both
+# arms" for the family rather than a gain, and it is absent from the headline table. What it
+# contributes is a validity and M2 row for a frontier model, and one fact the no-CoT study
+# should state plainly — that the `nocot` table has a hole in it where a model's thinking could
+# not be switched off.
+#
+# No reasoning key, so the vendor default (PLAN §2.1's definition of `think`) — unlike
+# opus47-think, which had to ask. Whether Fable's default is thinking ON is unverified; the
+# `reasoning_absent` flag in the manifest is the check.
+fable-think:
+  route: openrouter
+  model: openrouter/anthropic/claude-fable-5.1
+  model_batch: openrouter/anthropic/claude-fable-5.1:batch
+  batch: true
+  arm: think
+  family: fable
+  role: think
+  generate: {max_tokens: 16000}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page
+
+# **Probe, 2026-09-11.** PLAN §3 excludes Fable from this arm because `reasoning: {enabled:
+# false}` is a 400 — the same fact that was true of Astra, and the same conclusion that was
+# withdrawn on 2026-09-10 when the arm was redefined as "asked not to reason, verified per
+# call" (probe report §7.4). This entry tests whether the exclusion is stale. `low` is the
+# lowest effort the Claude families accept; if the count comes back non-zero, the entry is
+# deleted and PLAN §3 stands.
+fable-nocot:
+  route: openrouter
+  model: openrouter/anthropic/claude-fable-5.1
+  model_batch: openrouter/anthropic/claude-fable-5.1:batch
+  batch: true
+  arm: nocot
+  family: fable
+  role: nocot
+  # **`structured: true` is the 5 % rule's prescribed remedy, and this system needed it.**
+  # Plain, Fable deliberates in the *content* channel at `reasoning_tokens = 0` — 4 of 20 rows
+  # were working cut off mid-thought by the 16-token cap.
+  # PLAN §2.1: over 5 %, switch to the structured constraint and say so. Measured on the same
+  # 20 clues: extra text 20 % -> 5.0 %, 19 of 20 parsing as JSON, **accuracy identical at
+  # 0.400** — the channel changed, not the measurement. nocot-bench independently prescribes a
+  # JSON schema for this exact model, which rejects both prefill and forced tool choice.
+  # It is tight: mean output 15.2 of the 16, so the envelope now drives the truncations.
+  # **`max_tokens: 300`, and this is not a loosening of the arm.** With the schema on, the
+  # answer arrives as a JSON field and there is no content channel to deliberate in — so the
+  # *schema* is the constraint here, not the ceiling. At 16 the envelope (`{"answer": "`, ~11
+  # tokens) left about five for the answer and truncated **94 %** of clues whose gold answer
+  # exceeds 8 characters, against 12 % of the rest: a length-dependent penalty that depressed
+  # Fable's accuracy to 0.522 against 0.567 on its untruncated rows. That biased the headline
+  # *towards* our own hypothesis, Fable being a competitor to Astra. nocot-bench names the trap
+  # exactly — "tool forcing needs max_tokens >= 300; at 100, some providers truncate the
+  # arguments JSON mid-string" — and we were at 16. The model still generates only ~20 tokens.
+  generate: {max_tokens: 300, reasoning_effort: low, structured: true}
+  training_cutoff: null
+  training_cutoff_source: NOT CHECKED — not on the OpenRouter listing; take it from the vendor's own page

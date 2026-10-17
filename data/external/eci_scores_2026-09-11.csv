@@ -1,0 +1,9 @@
+family,model,eci,eci_ci_low,eci_ci_high,eci_date,eci_model_version
+astra,GPT-6 Astra,166.31,164.03,171.31,2026-09-03,gpt-6-astra_max
+fable,Claude Fable 5.1,164.47,162.32,167.79,2026-09-01,claude-fable-5-1_max
+opus5,Claude Opus 5,162.30,160.60,165.99,2026-07-24,claude-opus-5
+sol,GPT-5.6 Sol,161.81,160.23,165.21,2026-07-09,gpt-5.6-sol_none
+gpt55,GPT-5.5,159.12,156.74,162.37,2026-04-23,gpt-5.5_none
+opus47,Claude Opus 4.7,156.34,155.11,158.36,2026-04-16,claude-opus-4-7_max
+sonnet5,Claude Sonnet 5,156.22,153.41,158.68,2026-06-30,claude-sonnet-5_max
+haiku45,Claude Haiku 4.5,142.37,139.89,143.99,2025-10-15,claude-haiku-4-5-20251001_32K

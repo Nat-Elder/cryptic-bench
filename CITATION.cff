@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "CrypticBench: cryptic crossword solving with and without chain of thought,
+  with a machine-checkable derivation"
+authors:
+  - family-names: Elder
+    given-names: Nat
+version: 0.2.0
+date-released: 2026-09-10
+license: MIT
+repository-code: "https://github.com/Nat-Elder/cryptic-bench"

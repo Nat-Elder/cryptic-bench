@@ -1,0 +1,13 @@
+Data terms
+==========
+
+The setter's clues (data/corpus.jsonl), device annotations (data/devices.jsonl) and worked
+exemplars (data/exemplars.json) are not distributed with this repository. All rights are
+reserved by the setter.
+
+The code, data/nat50.txt and the review files in data/review/ are under the MIT licence;
+see LICENSE.
+
+The Guardian and Times calibration sets are not distributed either. The scripts in tools/
+download them from Saha et al. (2025) and Sadallah, Kotova & Kochmar (2024), under those
+projects' terms; the clues belong to their original setters and publishers. See docs/data.md.

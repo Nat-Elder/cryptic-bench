@@ -1,0 +1,9 @@
+system,model,accuracy,ci_low,ci_high,diff_vs_astra,diff_ci_low,diff_ci_high,note
+astra-nocot,GPT-6 Astra,0.636,0.545,0.721,,,,
+fable-nocot,Claude Fable 5.1,0.552,0.458,0.647,-0.083,-0.158,-0.009,structured output
+sol-nocot,GPT-5.6 Sol,0.528,0.435,0.619,-0.108,-0.184,-0.032,
+gpt55-nocot,GPT-5.5,0.514,0.422,0.608,-0.122,-0.205,-0.043,
+opus47-nocot,Claude Opus 4.7,0.510,0.414,0.608,-0.126,-0.213,-0.043,
+opus5-nocot,Claude Opus 5,0.455,0.360,0.550,-0.181,-0.262,-0.102,
+sonnet5-nocot,Claude Sonnet 5,0.297,0.217,0.381,-0.339,-0.429,-0.249,
+haiku45-nocot,Claude Haiku 4.5,0.207,0.140,0.278,-0.428,-0.521,-0.338,

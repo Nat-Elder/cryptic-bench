@@ -1,0 +1,77 @@
+# nat50 — 50 of the 100 nat test clues, for the `think` arms (Nat, 2026-09-10).
+# `nocot` runs on all 100; think, the Sonnet 5 rungs and think_cot run on these 50.
+# drawn 2026-09-10 by tools/draw_nat50.py
+# seed 20260906, proportional on `device` by largest remainder, from 100 clues
+# ids are in SEED ORDER: the gate's --limit 20 takes the first 20, which the full run
+# then reuses through --skip-done. Do not sort this file.
+#
+# per stratum (`device`), of the 100 -> of the 50:
+#   alternate      1 ->   1
+#   anagram       13 ->   7
+#   charade       48 ->  24
+#   container     13 ->   6
+#   cryptic-def    2 ->   1
+#   deletion       4 ->   2
+#   double         6 ->   3
+#   hidden         8 ->   4
+#   homophone      4 ->   2
+#   reversal       1 ->   0
+#
+# NOTE: PLAN §5.4 asks for a draw balanced on `hops`. No clue carried a hop count
+# (data/devices.jsonl), and a count inferred from the parse strings would be this
+# repo's number, not the setter's. Balanced on `device` instead, declared here.
+#
+# RULED 2026-09-10 (Nat): this draw is FINAL and `hops` is filled afterwards, for
+# the PLAN §5.4 regression — which runs on the nocot arm's own 100 clues, not on
+# this split. Filling `hops` is NOT a reason to re-draw: a re-draw changes what
+# every nat50 run already measured. Do not regenerate this file.
+cb-0022
+cb-0036
+cb-0118
+cb-0081
+cb-0059
+cb-0097
+cb-0011
+cb-0073
+cb-0088
+cb-0035
+cb-0054
+cb-0020
+cb-0034
+cb-0098
+cb-0085
+cb-0006
+cb-0074
+cb-0038
+cb-0108
+cb-0024
+cb-0061
+cb-0079
+cb-0107
+cb-0099
+cb-0055
+cb-0112
+cb-0120
+cb-0040
+cb-0019
+cb-0078
+cb-0104
+cb-0037
+cb-0008
+cb-0090
+cb-0015
+cb-0101
+cb-0010
+cb-0047
+cb-0025
+cb-0067
+cb-0092
+cb-0072
+cb-0082
+cb-0051
+cb-0045
+cb-0048
+cb-0121
+cb-0080
+cb-0066
+cb-0013

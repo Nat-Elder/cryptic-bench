@@ -1,0 +1,4 @@
+rung,accuracy,validity,mean_reasoning_tokens,truncated
+off,0.300,0.140,0,0.04
+low,0.520,0.300,1473,0.16
+high,0.580,0.340,7143,0.26
